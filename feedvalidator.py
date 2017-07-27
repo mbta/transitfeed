@@ -163,7 +163,7 @@ class CountingConsoleProblemAccumulator(transitfeed.SimpleProblemAccumulator):
     return ProblemCountText(self.ErrorCount(), self.WarningCount())
 
   def HasIssues(self):
-    return self.ErrorCount() or self.WarningCount()
+    return self.ErrorCount()
 
   def HasNotices(self):
     return self.NoticeCount()
@@ -221,8 +221,7 @@ class LimitPerTypeProblemAccumulator(transitfeed.ProblemAccumulatorInterface):
     self._ignore_types = ignore_types or set()
 
   def HasIssues(self):
-    return (self._type_to_name_to_problist[TYPE_ERROR] or
-            self._type_to_name_to_problist[TYPE_WARNING])
+    return (self._type_to_name_to_problist[TYPE_ERROR])
 
   def HasNotices(self):
     return self._type_to_name_to_problist[TYPE_NOTICE]
