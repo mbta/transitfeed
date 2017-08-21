@@ -212,6 +212,8 @@ class Transfer(GtfsObjectBase):
                                 reason="This field cannot be filled when " \
                                        "wheelchair_transfer == 2.")
         elif self.min_wheelchair_time < 0:
+          print self.min_wheelchair_time
+          print util.NonNegIntStringToInt(self.min_wheelchair_time)
           problems.InvalidValue('min_wheelchair_time', self.min_wheelchair_time,
                                 reason="This field cannot contain a negative " \
                                        "value.")
