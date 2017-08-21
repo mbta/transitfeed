@@ -57,6 +57,39 @@ class Transfer(GtfsObjectBase):
         pass
     else:
       self.min_transfer_time = None
+
+	if hasattr(self, 'min_walk_time'):
+      try:
+        self.min_walk_time = util.NonNegIntStringToInt(self.min_walk_time)
+      except (TypeError, ValueError):
+        pass
+    else:
+      self.min_walk_time = None
+
+    if hasattr(self, 'min_wheelchair_time'):
+      try:
+        self.min_wheelchair_time = util.NonNegIntStringToInt(self.min_wheelchair_time)
+      except (TypeError, ValueError):
+        pass
+    else:
+      self.min_wheelchair_time = None
+
+    if hasattr(self, 'suggested_buffer_time'):
+      try:
+        self.suggested_buffer_time = util.NonNegIntStringToInt(self.suggested_buffer_time)
+      except (TypeError, ValueError):
+        pass
+    else:
+      self.suggested_buffer_time = None
+
+    if hasattr(self, 'wheelchair_transfer'):
+      try:
+        self.wheelchair_transfer = util.NonNegIntStringToInt(self.wheelchair_transfer)
+      except (TypeError, ValueError):
+        pass
+    else:
+      self.wheelchair_transfer = None
+
     if schedule is not None:
       # Note from Tom, Nov 25, 2009: Maybe calling __init__ with a schedule
       # should output a DeprecationWarning. A schedule factory probably won't
