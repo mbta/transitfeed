@@ -58,7 +58,7 @@ class Transfer(GtfsObjectBase):
     else:
       self.min_transfer_time = None
 
-	if hasattr(self, 'min_walk_time'):
+    if hasattr(self, 'min_walk_time'):
       try:
         self.min_walk_time = util.NonNegIntStringToInt(self.min_walk_time)
       except (TypeError, ValueError):
