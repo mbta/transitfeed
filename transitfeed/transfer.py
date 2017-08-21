@@ -180,10 +180,6 @@ class Transfer(GtfsObjectBase):
                                 reason="The value is large for a transfer " \
                                        "time and most likely indicates " \
                                        "an error.")
-        else:
-          problems.InvalidValue('min_walk_time', self.min_walk_time,
-                                reason="This field cannot contain a negative " \
-                                       "value.")
       else:
         # It has a value, but it is not an integer
         problems.InvalidValue('min_walk_time', self.min_walk_time,
@@ -228,10 +224,6 @@ class Transfer(GtfsObjectBase):
                                 reason="The value is large for a transfer " \
                                        "time and most likely indicates " \
                                        "an error.")
-        else:
-          problems.InvalidValue('min_wheelchair_time', self.min_wheelchair_time,
-                                reason="This field cannot contain a negative " \
-                                       "value.")
       else:
         # It has a value, but it is not an integer
         problems.InvalidValue('min_wheelchair_time', self.min_wheelchair_time,
@@ -271,10 +263,6 @@ class Transfer(GtfsObjectBase):
                                 reason="The value is large for a transfer " \
                                        "time and most likely indicates " \
                                        "an error.")
-        else:
-          problems.InvalidValue('suggested_buffer_time', self.suggested_buffer_time,
-                                reason="This field cannot contain a negative " \
-                                       "value.")
       else:
         # It has a value, but it is not an integer
         problems.InvalidValue('suggested_buffer_time', self.suggested_buffer_time,
