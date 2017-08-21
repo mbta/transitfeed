@@ -21,12 +21,13 @@ import util
 class Transfer(GtfsObjectBase):
   """Represents a transfer in a schedule"""
   _REQUIRED_FIELD_NAMES = ['from_stop_id', 'to_stop_id', 'transfer_type']
-  _FIELD_NAMES = _REQUIRED_FIELD_NAMES + ['min_transfer_time']
+  _FIELD_NAMES = _REQUIRED_FIELD_NAMES + ['min_transfer_time', 'min_walk_time', 'min_wheelchair_time', 'suggested_buffer_time', 'wheelchair_transfer']
   _TABLE_NAME = 'transfers'
   _ID_COLUMNS = ['from_stop_id', 'to_stop_id']
 
   def __init__(self, schedule=None, from_stop_id=None, to_stop_id=None, transfer_type=None,
-               min_transfer_time=None, field_dict=None):
+               min_transfer_time=None, min_walk_time=None, min_wheelchair_time=None,
+               suggested_buffer_time=None, wheelchair_transfer=None, field_dict=None):
     self._schedule = None
     if field_dict:
       self.__dict__.update(field_dict)
@@ -35,6 +36,10 @@ class Transfer(GtfsObjectBase):
       self.to_stop_id = to_stop_id
       self.transfer_type = transfer_type
       self.min_transfer_time = min_transfer_time
+      self.min_walk_time = min_walk_time
+      self.min_wheelchair_time = min_wheelchair_time
+      self.suggested_buffer_time = suggested_buffer_time
+      self.wheelchair_transfer = wheelchair_transfer
 
     if getattr(self, 'transfer_type', None) in ("", None):
       # Use the default, recommended transfer, if attribute is not set or blank
@@ -110,6 +115,137 @@ class Transfer(GtfsObjectBase):
                               reason="If present, this field should contain " \
                                 "an integer value.")
         return False
+    elif self.transfer_type == 2:
+    	problems.InvalidValue('min_transfer_time', self.min_transfer_time,
+                              reason="This field must be filled when " \
+                                "transfer_type == 2.")
+    return True
+
+  def ValidateMinimumWalkTime(self, problems):
+    if not util.IsEmpty(self.min_walk_time):
+      if self.transfer_type != 2:
+        problems.MinimumTransferTimeSetWithInvalidTransferType(
+            self.transfer_type)
+
+      # If min_transfer_time is negative, equal to or bigger than 24h, issue
+      # an error. If smaller than 24h but bigger than 3h issue a warning.
+      # These errors are not blocking, and should not prevent the transfer
+      # from being added to the schedule.
+      if (isinstance(self.min_walk_time, int)):
+        if self.min_walk_time < 0:
+          problems.InvalidValue('min_walk_time', self.min_walk_time,
+                                reason="This field cannot contain a negative " \
+                                       "value.")
+        elif self.min_walk_time >= 24*3600:
+          problems.InvalidValue('min_walk_time', self.min_walk_time,
+                                reason="The value is very large for a " \
+                                       "transfer time and most likely " \
+                                       "indicates an error.")
+        elif self.min_walk_time >= 3*3600:
+          problems.InvalidValue('min_walk_time', self.min_walk_time,
+                                type=problems_module.TYPE_WARNING,
+                                reason="The value is large for a transfer " \
+                                       "time and most likely indicates " \
+                                       "an error.")
+        else:
+          problems.InvalidValue('min_walk_time', self.min_walk_time,
+                                reason="This field cannot contain a negative " \
+                                       "value.")
+      else:
+        # It has a value, but it is not an integer
+        problems.InvalidValue('min_walk_time', self.min_walk_time,
+                              reason="If present, this field should contain " \
+                                "an integer value.")
+        return False
+    elif self.transfer_type == 2:
+    	problems.InvalidValue('min_walk_time', self.min_walk_time,
+                              reason="This field must be filled when " \
+                                "transfer_type == 2.")
+    return True
+
+  def ValidateMinimumWheelchairTime(self, problems):
+    if not util.IsEmpty(self.min_wheelchair_time):
+      if self.transfer_type != 2:
+        problems.MinimumTransferTimeSetWithInvalidTransferType(
+            self.transfer_type)
+
+      # If min_transfer_time is negative, equal to or bigger than 24h, issue
+      # an error. If smaller than 24h but bigger than 3h issue a warning.
+      # These errors are not blocking, and should not prevent the transfer
+      # from being added to the schedule.
+      if (isinstance(self.min_wheelchair_time, int)):
+      	if self.wheelchair_transfer == 2:
+      	  problems.InvalidValue('min_wheelchair_time', self.min_wheelchair_time,
+                                reason="This field cannot be filled when " \
+                                       "wheelchair_transfer == 2.")
+        elif self.min_wheelchair_time < 0:
+          problems.InvalidValue('min_wheelchair_time', self.min_wheelchair_time,
+                                reason="This field cannot contain a negative " \
+                                       "value.")
+        elif self.min_wheelchair_time >= 24*3600:
+          problems.InvalidValue('min_wheelchair_time', self.min_wheelchair_time,
+                                reason="The value is very large for a " \
+                                       "transfer time and most likely " \
+                                       "indicates an error.")
+        elif self.min_wheelchair_time >= 3*3600:
+          problems.InvalidValue('min_wheelchair_time', self.min_wheelchair_time,
+                                type=problems_module.TYPE_WARNING,
+                                reason="The value is large for a transfer " \
+                                       "time and most likely indicates " \
+                                       "an error.")
+        else:
+          problems.InvalidValue('min_wheelchair_time', self.min_wheelchair_time,
+                                reason="This field cannot contain a negative " \
+                                       "value.")
+      else:
+        # It has a value, but it is not an integer
+        problems.InvalidValue('min_wheelchair_time', self.min_wheelchair_time,
+                              reason="If present, this field should contain " \
+                                "an integer value.")
+        return False
+    elif self.wheelchair_transfer == 1 and self.transfer_type == 2:
+    	problems.InvalidValue('min_wheelchair_time', self.min_wheelchair_time,
+                              reason="This field must be filled when " \
+                                "wheelchair_transfer == 1 and " \
+                                "transfer_type == 2.")
+    return True
+
+  def ValidateSuggestedBufferTime(self, problems):
+    if not util.IsEmpty(self.suggested_buffer_time):
+      if self.transfer_type != 2:
+        problems.MinimumTransferTimeSetWithInvalidTransferType(
+            self.transfer_type)
+
+      # If min_transfer_time is negative, equal to or bigger than 24h, issue
+      # an error. If smaller than 24h but bigger than 3h issue a warning.
+      # These errors are not blocking, and should not prevent the transfer
+      # from being added to the schedule.
+      if (isinstance(self.suggested_buffer_time, int)):
+        if self.suggested_buffer_time < 0:
+          problems.InvalidValue('suggested_buffer_time', self.suggested_buffer_time,
+                                reason="This field cannot contain a negative " \
+                                       "value.")
+        elif self.suggested_buffer_time >= 24*3600:
+          problems.InvalidValue('suggested_buffer_time', self.suggested_buffer_time,
+                                reason="The value is very large for a " \
+                                       "transfer time and most likely " \
+                                       "indicates an error.")
+        elif self.suggested_buffer_time >= 3*3600:
+          problems.InvalidValue('suggested_buffer_time', self.suggested_buffer_time,
+                                type=problems_module.TYPE_WARNING,
+                                reason="The value is large for a transfer " \
+                                       "time and most likely indicates " \
+                                       "an error.")
+        else:
+          problems.InvalidValue('suggested_buffer_time', self.suggested_buffer_time,
+                                reason="This field cannot contain a negative " \
+                                       "value.")
+      else:
+        # It has a value, but it is not an integer
+        problems.InvalidValue('suggested_buffer_time', self.suggested_buffer_time,
+                              reason="If present, this field should contain " \
+                                "an integer value.")
+        return False
     return True
 
   def GetTransferDistance(self):
@@ -133,11 +269,13 @@ class Transfer(GtfsObjectBase):
   def ValidateTransferDistance(self, problems):
     distance = self.GetTransferDistance()
 
-    if distance > 10000:
+    # MBTA-jfabi change: change error condition from 10'000m to 1'000m
+    if distance > 1000:
       problems.TransferDistanceTooBig(self.from_stop_id,
                                       self.to_stop_id,
                                       distance)
-    elif distance > 2000:
+    # MBTA-jfabi change: change warning condition from 2'000m to 200m
+    elif distance > 200:
       problems.TransferDistanceTooBig(self.from_stop_id,
                                       self.to_stop_id,
                                       distance,
@@ -171,6 +309,9 @@ class Transfer(GtfsObjectBase):
     result = self.ValidateToStopIdIsPresent(problems) and result
     result = self.ValidateTransferType(problems) and result
     result = self.ValidateMinimumTransferTime(problems) and result
+    result = self.ValidateMinimumWalkTime(problems) and result
+    result = self.ValidateMinimumWheelchairTime(problems) and result
+    result = self.ValidateSuggestedBufferTime(problems) and result
     return result
 
   def ValidateAfterAdd(self, problems):
