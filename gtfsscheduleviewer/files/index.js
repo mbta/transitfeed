@@ -678,15 +678,8 @@ function sizeRouteList() {
 var calStartDate = new CalendarPopup();
 calStartDate.setReturnFunction("setStartDate");
 
-function maybeAddLeadingZero(number) {
-  if(number > 10) {
-    return number;
-  }
-  return '0' + number;
-}
-
 function setStartDate(y,m,d) {
-  document.getElementById('startDateInput').value = y + maybeAddLeadingZero(m) + maybeAddLeadingZero(d);
+  document.getElementById('startDateInput').value = y + LZ(m) + LZ(d);
 }
 
 function downloadUrl(url, callback) {
