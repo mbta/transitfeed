@@ -295,8 +295,8 @@ class Transfer(GtfsObjectBase):
       problems.TransferDistanceTooBig(self.from_stop_id,
                                       self.to_stop_id,
                                       distance)
-    # MBTA-jfabi change: change warning condition from 2'000m to 200m
-    elif distance > 200:
+    # MBTA-jfabi change: change warning condition from 2'000m to 250m
+    elif distance > 250:
       problems.TransferDistanceTooBig(self.from_stop_id,
                                       self.to_stop_id,
                                       distance,
