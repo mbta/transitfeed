@@ -463,7 +463,7 @@ class Trip(GtfsObjectBase):
                                     'should be greater than start_time')
 
     if not exact_times:
-      exact_times = 0      
+      exact_times = 0
     if exact_times not in (0, 1):
       problem_reporter.InvalidValue('exact_times', exact_times,
           'Should be 0 (no fixed schedule) or 1 (fixed and regular schedule)')
@@ -764,4 +764,4 @@ class Trip(GtfsObjectBase):
 
 
 def SortListOfTripByTime(trips):
-  trips.sort(key=GetStartTime)
+  trips.sort(key=Trip.GetStartTime)

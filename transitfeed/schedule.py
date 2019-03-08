@@ -148,8 +148,9 @@ class Schedule(object):
     cursor.execute("""CREATE INDEX stop_index ON stop_times (stop_id);""")
 
   def GetStopBoundingBox(self):
-    return (min(s.stop_lat for s in self.stops.values()),
-            min(s.stop_lon for s in self.stops.values()),
+    # generic nodes don't need a lat/lon
+    return (min(s.stop_lat for s in self.stops.values() if s.stop_lat is not None),
+            min(s.stop_lon for s in self.stops.values() if s.stop_lon is not None),
             max(s.stop_lat for s in self.stops.values()),
             max(s.stop_lon for s in self.stops.values()),
            )
@@ -1248,7 +1249,7 @@ class Schedule(object):
             # If the serivce_id_pair_key is not in the cache, we do the
             # full service period comparison
             if service_id_pair_key not in service_period_overlap_cache:
-              
+
               # If the trip references an unknown service id, then we bail,
               # since we can't effectively determine block overlap and an
               # error will have already been registered for the missing

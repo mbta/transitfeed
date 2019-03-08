@@ -289,7 +289,7 @@ function callbackDisplayStopInfoWindow(marker, data, responseCode) {
     var tripname = timeTrips[i][1][1];
     var service_id = timeTrips[i][1][2];
     var timepoint = timeTrips[i][2];
-    html = html + "<tr onClick='map.closeInfoWindow();selectTrip(\"" +
+    html = html + "<tr onClick='infoWindow.close();selectTrip(\"" +
       tripid + "\")'>" +
       "<td>" + service_id +
       "<td align='right'>" + (timepoint ? "" : "~") +
