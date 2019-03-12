@@ -36,11 +36,11 @@ class Stop(GtfsObjectBase):
     stop_lon: a float representing the longitude of the stop
     All other attributes are strings.
   """
-  _REQUIRED_FIELD_NAMES = ['stop_id', 'stop_name', 'stop_lat', 'stop_lon']
+  _REQUIRED_FIELD_NAMES = ['stop_id', 'stop_name']
   _FIELD_NAMES = _REQUIRED_FIELD_NAMES + \
                  ['stop_desc', 'zone_id', 'stop_url', 'stop_code',
                   'location_type', 'parent_station', 'stop_timezone',
-                  'wheelchair_boarding']
+                  'wheelchair_boarding', 'stop_lat', 'stop_lon']
   _TABLE_NAME = 'stops'
 
   LOCATION_TYPE_STATION = 1
@@ -158,6 +158,8 @@ class Stop(GtfsObjectBase):
       else:
         if self.stop_lat > 90 or self.stop_lat < -90:
           problems.InvalidValue('stop_lat', value)
+    elif self.location_type != 3:
+        problems.MissingValue('stop_lat')
 
   def ValidateStopLongitude(self, problems):
     if self.stop_lon is not None:
@@ -171,6 +173,8 @@ class Stop(GtfsObjectBase):
       else:
         if self.stop_lon > 180 or self.stop_lon < -180:
           problems.InvalidValue('stop_lon', value)
+    elif self.location_type != 3:
+        problems.MissingValue('stop_lon')
 
   def ValidateStopUrl(self, problems):
       value = self.stop_url
