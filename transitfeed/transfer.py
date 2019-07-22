@@ -22,13 +22,13 @@ from . import util
 class Transfer(GtfsObjectBase):
   """Represents a transfer in a schedule"""
   _REQUIRED_FIELD_NAMES = ['from_stop_id', 'to_stop_id', 'transfer_type']
-  _FIELD_NAMES = _REQUIRED_FIELD_NAMES + ['min_transfer_time', 'min_walk_time', 'min_wheelchair_time', 'suggested_buffer_time', 'wheelchair_transfer']
+  _FIELD_NAMES = _REQUIRED_FIELD_NAMES + ['min_transfer_time', 'min_walk_time', 'min_wheelchair_time', 'suggested_buffer_time', 'wheelchair_transfer', 'from_trip_id', 'to_trip_id']
   _TABLE_NAME = 'transfers'
-  _ID_COLUMNS = ['from_stop_id', 'to_stop_id']
+  _ID_COLUMNS = ['from_stop_id', 'to_stop_id', 'from_trip_id', 'to_trip_id']
 
   def __init__(self, schedule=None, from_stop_id=None, to_stop_id=None, transfer_type=None,
                min_transfer_time=None, min_walk_time=None, min_wheelchair_time=None,
-               suggested_buffer_time=None, wheelchair_transfer=None, field_dict=None):
+               suggested_buffer_time=None, wheelchair_transfer=None, field_dict=None, from_trip_id=None, to_trip_id=None):
     self._schedule = None
     if field_dict:
       self.__dict__.update(field_dict)
@@ -41,6 +41,8 @@ class Transfer(GtfsObjectBase):
       self.min_wheelchair_time = min_wheelchair_time
       self.suggested_buffer_time = suggested_buffer_time
       self.wheelchair_transfer = wheelchair_transfer
+      self.from_trip_id = from_trip_id
+      self.to_trip_id = to_trip_id
 
     if getattr(self, 'transfer_type', None) in ("", None):
       # Use the default, recommended transfer, if attribute is not set or blank
