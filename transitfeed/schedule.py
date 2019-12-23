@@ -16,7 +16,6 @@
 
 from __future__ import absolute_import
 import bisect
-import cStringIO as StringIO
 import datetime
 import itertools
 import os
@@ -44,6 +43,7 @@ from . import gtfsfactoryuser
 from . import problems as problems_module
 from .util import defaultdict
 from . import util
+from .compat import StringIO
 
 class Schedule(object):
   """Represents a Schedule, a collection of stops, routes, trips and
@@ -634,7 +634,7 @@ class Schedule(object):
     archive = zipfile.ZipFile(file, 'w')
 
     if 'agency' in self._table_columns:
-      agency_string = StringIO.StringIO()
+      agency_string = StringIO()
       writer = util.CsvUnicodeWriter(agency_string)
       columns = self.GetTableColumns('agency')
       writer.writerow(columns)
@@ -644,14 +644,14 @@ class Schedule(object):
 
 
     if 'feed_info' in self._table_columns:
-      feed_info_string = StringIO.StringIO()
+      feed_info_string = StringIO()
       writer = util.CsvUnicodeWriter(feed_info_string)
       columns = self.GetTableColumns('feed_info')
       writer.writerow(columns)
       writer.writerow([util.EncodeUnicode(self.feed_info[c]) for c in columns])
       self._WriteArchiveString(archive, 'feed_info.txt', feed_info_string)
 
-    calendar_dates_string = StringIO.StringIO()
+    calendar_dates_string = StringIO()
     writer = util.CsvUnicodeWriter(calendar_dates_string)
     writer.writerow(
         self._gtfs_factory.ServicePeriod._FIELD_NAMES_CALENDAR_DATES)
@@ -666,7 +666,7 @@ class Schedule(object):
       self._WriteArchiveString(archive, 'calendar_dates.txt',
                                calendar_dates_string)
 
-    calendar_string = StringIO.StringIO()
+    calendar_string = StringIO()
     writer = util.CsvUnicodeWriter(calendar_string)
     writer.writerow(self._gtfs_factory.ServicePeriod._FIELD_NAMES)
     has_data = False
@@ -679,7 +679,7 @@ class Schedule(object):
       self._WriteArchiveString(archive, 'calendar.txt', calendar_string)
 
     if 'stops' in self._table_columns:
-      stop_string = StringIO.StringIO()
+      stop_string = StringIO()
       writer = util.CsvUnicodeWriter(stop_string)
       columns = self.GetTableColumns('stops')
       writer.writerow(columns)
@@ -688,7 +688,7 @@ class Schedule(object):
       self._WriteArchiveString(archive, 'stops.txt', stop_string)
 
     if 'routes' in self._table_columns:
-      route_string = StringIO.StringIO()
+      route_string = StringIO()
       writer = util.CsvUnicodeWriter(route_string)
       columns = self.GetTableColumns('routes')
       writer.writerow(columns)
@@ -697,7 +697,7 @@ class Schedule(object):
       self._WriteArchiveString(archive, 'routes.txt', route_string)
 
     if 'trips' in self._table_columns:
-      trips_string = StringIO.StringIO()
+      trips_string = StringIO()
       writer = util.CsvUnicodeWriter(trips_string)
       columns = self.GetTableColumns('trips')
       writer.writerow(columns)
@@ -710,7 +710,7 @@ class Schedule(object):
     for trip in self.GetTripList():
       headway_rows += trip.GetFrequencyOutputTuples()
     if headway_rows:
-      headway_string = StringIO.StringIO()
+      headway_string = StringIO()
       writer = util.CsvUnicodeWriter(headway_string)
       writer.writerow(self._gtfs_factory.Frequency._FIELD_NAMES)
       writer.writerows(headway_rows)
@@ -718,7 +718,7 @@ class Schedule(object):
 
     # write fares (if applicable)
     if self.GetFareAttributeList():
-      fare_string = StringIO.StringIO()
+      fare_string = StringIO()
       writer = util.CsvUnicodeWriter(fare_string)
       writer.writerow(self._gtfs_factory.FareAttribute._FIELD_NAMES)
       writer.writerows(
@@ -731,12 +731,12 @@ class Schedule(object):
       for rule in fare.GetFareRuleList():
         rule_rows.append(rule.GetFieldValuesTuple())
     if rule_rows:
-      rule_string = StringIO.StringIO()
+      rule_string = StringIO()
       writer = util.CsvUnicodeWriter(rule_string)
       writer.writerow(self._gtfs_factory.FareRule._FIELD_NAMES)
       writer.writerows(rule_rows)
       self._WriteArchiveString(archive, 'fare_rules.txt', rule_string)
-    stop_times_string = StringIO.StringIO()
+    stop_times_string = StringIO()
     writer = util.CsvUnicodeWriter(stop_times_string)
     writer.writerow(self._gtfs_factory.StopTime._FIELD_NAMES)
     for t in self.trips.values():
@@ -751,14 +751,14 @@ class Schedule(object):
         shape_rows.append((shape.shape_id, lat, lon, seq, dist))
         seq += 1
     if shape_rows:
-      shape_string = StringIO.StringIO()
+      shape_string = StringIO()
       writer = util.CsvUnicodeWriter(shape_string)
       writer.writerow(self._gtfs_factory.Shape._FIELD_NAMES)
       writer.writerows(shape_rows)
       self._WriteArchiveString(archive, 'shapes.txt', shape_string)
 
     if 'transfers' in self._table_columns:
-      transfer_string = StringIO.StringIO()
+      transfer_string = StringIO()
       writer = util.CsvUnicodeWriter(transfer_string)
       columns = self.GetTableColumns('transfers')
       writer.writerow(columns)
@@ -1279,6 +1279,15 @@ class Schedule(object):
                                                    trip_b.trip_id,
                                                    block_id)
 
+  def ValidateIdlessAgency(self, problems):
+    # Check that only one agency is IDless
+    if len(self._agencies) > 1:
+      for agency in self._agencies.values():
+        if util.IsEmpty(agency.agency_id):
+          problems.OtherProblem('Agency "%s" does not have an ID. '
+                                'This is only allowed if a single agency is defined, '
+                                'whereas there are %d in total.' % (agency.agency_name, len(self._agencies)))
+
   def ValidateRouteAgencyId(self, problems):
     # Check that routes' agency IDs are valid, if set
     for route in self.routes.values():
@@ -1347,6 +1356,7 @@ class Schedule(object):
     self.ValidateNearbyStops(problems)
     self.ValidateRouteNames(problems, validate_children)
     self.ValidateTrips(problems)
+    self.ValidateIdlessAgency(problems)
     self.ValidateRouteAgencyId(problems)
     self.ValidateTripStopTimes(problems)
     self.ValidateUnusedShapes(problems)
